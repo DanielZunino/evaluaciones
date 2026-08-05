@@ -265,12 +265,11 @@
   }
   .cert-stripe{height:6px;background:repeating-linear-gradient(135deg,var(--safety-yellow) 0 14px,var(--cc-blue) 14px 28px);}
   .cert-inner{padding:22px 26px 20px;}
-  .cert-brand{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;}
-  .cert-brand-left{display:flex;align-items:center;gap:8px;}
-  .cert-brand-badge{width:56px;height:28px;border-radius:6px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex:0 0 auto;padding:3px;}
-  .cert-brand-badge svg{width:16px;height:16px;}
-  .cert-brand-name{font-family:var(--font-display);font-weight:800;font-size:13px;text-transform:uppercase;color:var(--cc-blue);letter-spacing:0.02em;line-height:1.15;}
-  .cert-eyebrow{font-family:var(--font-display);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-soft);}
+  .cert-header{position:relative;text-align:center;margin-bottom:16px;padding-top:2px;}
+  .cert-logo-center{width:130px;margin:0 auto 8px;}
+  .cert-logo-center img{width:100%;height:auto;display:block;}
+  .cert-brand-name{font-family:var(--font-display);font-weight:800;font-size:14px;text-transform:uppercase;color:var(--cc-blue);letter-spacing:0.03em;line-height:1.15;}
+  .cert-eyebrow{font-family:var(--font-display);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-soft);margin-top:2px;}
   .cert-title{font-family:var(--font-display);font-size:19px;font-weight:800;color:var(--cc-blue);margin:0 0 8px;text-transform:uppercase;line-height:1.05;}
   .cert-name{font-family:var(--font-display);font-size:19px;font-weight:700;margin:0 0 10px;}
   .cert-body{display:flex;gap:22px;align-items:stretch;}
@@ -290,6 +289,7 @@
   .cert-code{font-family:monospace;font-size:10px;color:var(--ink-soft);text-align:center;margin-top:2px;}
   .cert-code b{color:var(--ink);}
   .cert-seal{
+    position:absolute;top:2px;right:0;
     font-family:var(--font-display);font-weight:800;font-size:10.5px;
     color:var(--ok);background:var(--ok-bg);border:1.5px solid var(--ok);border-radius:20px;
     padding:4px 10px;display:flex;align-items:center;gap:4px;
@@ -331,9 +331,10 @@
   /* CERT SIGNATURES */
   .cert-sigs{display:flex;gap:12px;margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);}
   .cert-sig-box{flex:1;text-align:center;}
-  .cert-sig-box img{max-height:38px;max-width:100%;object-fit:contain;}
+  .cert-sig-imgwrap{height:60px;display:flex;align-items:flex-end;justify-content:center;}
+  .cert-sig-imgwrap img{max-height:100%;max-width:100%;object-fit:contain;}
   .cert-sig-line{border-top:1.5px solid var(--ink);margin-top:3px;padding-top:4px;font-size:9.5px;color:var(--ink-soft);line-height:1.3;}
-  .cert-sig-placeholder{height:76px;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:12px;color:var(--cc-blue);font-style:italic;}
+  .cert-sig-placeholder{height:60px;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:12px;color:var(--cc-blue);font-style:italic;}
 
   .cert-vigencia{
     margin-top:10px;background:var(--paper);border-radius:20px;padding:6px 12px;
@@ -451,19 +452,15 @@
     <div id="view-admin" class="hidden">
       <div class="card">
         <div class="section-tag">Panel privado</div>
-        <h2 class="section-title">Registro de evaluaciones</h2>
-        <p class="section-hint">Todos los intentos quedan aquí automáticamente, apruebe o no la persona, y aunque no descarguen su certificado.</p>
-        <div id="adminStats" style="display:flex;gap:10px;margin-bottom:16px;"></div>
-        <div class="nav-buttons" style="margin-bottom:10px;">
-          <button class="btn btn-secondary" id="btnExportCsv">Descargar registro (CSV)</button>
-          <button class="btn btn-secondary" id="btnRefreshAdmin">Actualizar</button>
+        <h2 class="section-title">Resultados</h2>
+        <p class="section-hint">Cada evaluación (apruebe o no) queda registrada automáticamente en tu Drive, y el certificado PDF se guarda ahí mismo cuando aprueban.</p>
+        <div class="nav-buttons" style="margin-bottom:16px;">
+          <a class="btn btn-primary" href="https://drive.google.com/drive/u/0/folders/13mUllRMZinEBbgevSTT8d2GCuRc4fVjP" target="_blank" rel="noopener" style="text-decoration:none;display:flex;align-items:center;justify-content:center;">📁 Abrir carpeta de Drive</a>
+          <button class="btn btn-secondary" id="btnRefreshAdmin">Actualizar gráfico</button>
         </div>
-        <div class="nav-buttons" style="margin-bottom:0;">
-          <button class="btn btn-primary" id="btnDownloadZip">Descargar todos los certificados (ZIP)</button>
-          <a class="btn btn-secondary" href="https://drive.google.com/drive/u/0/folders/13mUllRMZinEBbgevSTT8d2GCuRc4fVjP" target="_blank" rel="noopener" style="text-decoration:none;display:flex;align-items:center;justify-content:center;">Abrir carpeta de Drive</a>
-        </div>
+        <div id="adminChart"></div>
       </div>
-      <div id="adminList"></div>
+    </div>
     </div>
 
     <!-- ============ VIEW: WELCOME ============ -->
@@ -550,7 +547,7 @@ const FIRMA_DATA_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgEAAAD0CA
    porque el contenido corre dentro de un iframe aislado (siempre da una URL
    interna, no la real). Si en el futuro se vuelve a publicar y el link cambia,
    esta es la ÚNICA línea que hay que actualizar. */
-const PUBLISHED_URL = "https://claude.ai/public/artifacts/859ec2d4-3a9f-446f-baaa-6de12077082d";
+const PUBLISHED_URL = "https://danielzunino.github.io/evaluaciones/";
 /* Script propio de Daniel (Google Apps Script) que recibe el PDF y lo guarda directo en su Drive.
    No depende del sistema de guardado de Claude — es la vía de respaldo principal. */
 const DRIVE_UPLOAD_URL = "https://script.google.com/macros/s/AKfycbxW_2WbQOw7jbY7KbnE690InaMGngGv-rcjRiRHj3iM_1A7wxTfcaT3ds5vUHkNqu3i/exec";
@@ -746,7 +743,7 @@ document.getElementById('btnStart').addEventListener('click', ()=>{
     showToast("Por favor completa al menos tu nombre completo y RUN antes de comenzar.", true);
     return;
   }
-  worker = {name, rut, cargo, sucursal};
+  worker = {name: toTitleCase(name), rut, cargo, sucursal};
   currentStep = 0;
   renderQuizStep();
   showView('view-quiz');
@@ -764,6 +761,7 @@ function updateProgress(){
 }
 
 function renderQuizStep(){
+  window.scrollTo({top:0, behavior:'smooth'});
   updateProgress();
   const el = document.getElementById('view-quiz');
   if(currentStep===0) el.innerHTML = renderSection1();
@@ -970,6 +968,25 @@ function finishQuiz(){
   // El respaldo en el registro de Daniel se hace en paralelo, sin bloquear el certificado.
   // Si el permiso de guardado queda pendiente o falla, el trabajador igual ve/descarga su certificado.
   saveAttemptRecord(record);
+
+  // Anota el resultado (apruebe o no) en la planilla "Registro de Evaluaciones" del Drive de Daniel.
+  logResultToDrive(record);
+}
+
+function logResultToDrive(record, attempt){
+  attempt = attempt || 1;
+  fetch(DRIVE_UPLOAD_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {'Content-Type': 'text/plain'},
+    body: JSON.stringify({record})
+  }).catch(e=>{
+    if(attempt < 3){
+      setTimeout(()=> logResultToDrive(record, attempt+1), 1500*attempt);
+    }else{
+      console.error('No se pudo anotar el resultado en la planilla de Drive tras 3 intentos:', e);
+    }
+  });
 }
 
 /* =======================================================
@@ -985,8 +1002,16 @@ function genCode(){
 
 /* "Juan Carlos Pérez Soto" -> "Pérez Soto Juan Carlos" (últimas 2 palabras = apellidos,
    mismo criterio que generador.py) */
+const NAME_PARTICLES = new Set(['de','del','la','las','los','y','van','von','di','da']);
+/* "JUAN carlos PÉREZ soto" -> "Juan Carlos Pérez Soto" (respeta partículas como "de la") */
+function toTitleCase(str){
+  return (str||'').trim().toLowerCase().split(/\s+/).map((w,i)=>{
+    if(i>0 && NAME_PARTICLES.has(w)) return w;
+    return w.charAt(0).toUpperCase() + w.slice(1);
+  }).join(' ');
+}
 function apellidoNombreOrder(fullName){
-  const parts = (fullName||'').trim().split(/\s+/).filter(Boolean);
+  const parts = toTitleCase(fullName).split(/\s+/).filter(Boolean);
   if(parts.length <= 2) return parts.join(' ');
   const apellidos = parts.slice(-2).join(' ');
   const nombres = parts.slice(0,-2).join(' ');
@@ -1084,8 +1109,10 @@ function certificateInnerHtml(data){
   const certLabel = 'Ev. IRL — ' + data.date;
   let html = '';
   html += '<div class="cert-stripe"></div><div class="cert-inner">';
-  html += '<div class="cert-brand">';
-  html += '<div class="cert-brand-left"><div class="cert-brand-badge"><img src="'+LOGO_DATA_URI+'" alt="Constructor Center" style="width:100%;height:100%;object-fit:contain;"></div><div><div class="cert-brand-name">Constructor Center</div><div class="cert-eyebrow">'+escapeHtml(certLabel)+'</div></div></div>';
+  html += '<div class="cert-header">';
+  html += '<div class="cert-logo-center"><img src="'+LOGO_DATA_URI+'" alt="Constructor Center" style="width:100%;height:auto;"></div>';
+  html += '<div class="cert-brand-name">Constructor Center</div>';
+  html += '<div class="cert-eyebrow">'+escapeHtml(certLabel)+'</div>';
   html += '<div class="cert-seal">✓ Aprobado</div>';
   html += '</div>';
   html += '<div class="cert-body">';
@@ -1105,8 +1132,8 @@ function certificateInnerHtml(data){
   html += '</div>';
   html += '</div>';
   html += '<div class="cert-sigs">';
-  html += '<div class="cert-sig-box">'+(data.signature?'<img src="'+data.signature+'" style="max-height:76px;max-width:100%;object-fit:contain;">':'<div class="cert-sig-placeholder"></div>')+'<div class="cert-sig-line">Firma del trabajador<br>'+escapeHtml(data.name)+'</div></div>';
-  html += '<div class="cert-sig-box"><img src="'+FIRMA_DATA_URI+'" style="max-height:38px;max-width:100%;object-fit:contain;"><div class="cert-sig-line">Firma prevencionista<br>Daniel Zunino Urrutia · Prevención de Riesgos Constructor Center</div></div>';
+  html += '<div class="cert-sig-box"><div class="cert-sig-imgwrap">'+(data.signature?'<img src="'+data.signature+'">':'')+'</div><div class="cert-sig-line">Firma del trabajador<br>'+escapeHtml(data.name)+'</div></div>';
+  html += '<div class="cert-sig-box"><div class="cert-sig-imgwrap"><img src="'+FIRMA_DATA_URI+'"></div><div class="cert-sig-line">Firma prevencionista<br>Daniel Zunino Urrutia · Prevención de Riesgos Constructor Center</div></div>';
   html += '</div>';
   html += '<div class="cert-vigencia">Vigencia: <b>18 meses</b> — válido hasta <b>'+data.expiry+'</b></div>';
   html += '</div>';
@@ -1550,7 +1577,7 @@ async function checkAdminAccess(){
   const params = new URLSearchParams(window.location.search);
   if(params.get('panel') !== ADMIN_KEY) return;
   showView('view-admin');
-  await loadAdminData();
+  await loadAdminChart();
 }
 
 document.getElementById('btnOpenAdmin').addEventListener('click', ()=>{
@@ -1570,134 +1597,64 @@ async function trySubmitAdminKey(){
   }
   document.getElementById('adminKeyModal').classList.add('hidden');
   showView('view-admin');
-  await loadAdminData();
+  await loadAdminChart();
 }
 document.getElementById('btnSubmitAdminKey').addEventListener('click', trySubmitAdminKey);
 document.getElementById('inAdminKey').addEventListener('keydown', (e)=>{
   if(e.key === 'Enter') trySubmitAdminKey();
 });
 
-async function loadAdminData(){
-  const listEl = document.getElementById('adminList');
-  const statsEl = document.getElementById('adminStats');
-  listEl.innerHTML = '<p class="lede">Cargando registros...</p>';
-  let keysRes;
-  try{
-    if(!HAS_CLOUD_STORAGE) throw new Error('no disponible fuera de Claude');
-    keysRes = await window.storage.list('attempt:', true);
-  }catch(e){
-    listEl.innerHTML = '<p class="lede">Este panel no está disponible en esta versión de la página. Revisa directamente tu carpeta de Drive — ahí llegan todos los certificados aprobados automáticamente.</p>';
-    statsEl.innerHTML = '';
-    return;
-  }
-  const keys = (keysRes && keysRes.keys) ? keysRes.keys : [];
-  const records = [];
-  for(const k of keys){
-    try{
-      const res = await window.storage.get(k, true);
-      if(res && res.value) records.push(JSON.parse(res.value));
-    }catch(e){ /* ignore broken record */ }
-  }
-  records.sort((a,b)=> (b.timestamp||'').localeCompare(a.timestamp||''));
-  window.__adminRecords = records;
-
-  const total = records.length;
-  const passed = records.filter(r=>r.passed).length;
-  const failed = total - passed;
-  statsEl.innerHTML =
-    '<div class="admin-stat"><div class="n">'+total+'</div><div class="l">Total</div></div>'+
-    '<div class="admin-stat"><div class="n" style="color:var(--ok)">'+passed+'</div><div class="l">Aprobados</div></div>'+
-    '<div class="admin-stat"><div class="n" style="color:var(--cc-red)">'+failed+'</div><div class="l">Reprobados</div></div>';
-
-  if(total===0){
-    listEl.innerHTML = '<div class="admin-empty">Todavía no hay evaluaciones registradas.</div>';
-    return;
-  }
-
-  listEl.innerHTML = records.map((r,i)=>{
-    const badge = r.passed ? '<span class="admin-badge pass">Aprobado</span>' : '<span class="admin-badge fail">Reprobado</span>';
-    const dl = r.passed ? '<button class="admin-btn" data-dl-idx="'+i+'">Descargar PDF</button>' : '';
-    return '<div class="admin-row">'
-      + '<div class="admin-row-main"><div class="admin-row-name">'+escapeHtml(r.name||'(sin nombre)')+'</div>'
-      + '<div class="admin-row-meta">'+escapeHtml(r.rut||'')+(r.sucursal?' · '+escapeHtml(r.sucursal):'')+(r.cargo?' · '+escapeHtml(r.cargo):'')+'<br>'
-      + r.date+' · '+r.total+'/'+r.maxTotal+' pts ('+r.pct+'%)'+(r.code?' · Código '+r.code:'')+'</div></div>'
-      + badge + '<div class="admin-row-actions">'+dl+'</div>'
-      + '</div>';
-  }).join('');
-
-  listEl.querySelectorAll('[data-dl-idx]').forEach(btn=>{
-    btn.addEventListener('click', ()=> downloadAdminCert(parseInt(btn.dataset.dlIdx), btn));
+/* Lee las estadísticas desde el script de Drive vía JSONP (evita problemas de CORS con GET) */
+function fetchDriveStatsJsonp(){
+  return new Promise((resolve, reject)=>{
+    const cbName = 'driveStatsCb_' + Date.now();
+    const script = document.createElement('script');
+    let done = false;
+    window[cbName] = (data)=>{
+      done = true;
+      resolve(data);
+      delete window[cbName];
+      script.remove();
+    };
+    script.src = DRIVE_UPLOAD_URL + '?callback=' + cbName;
+    script.onerror = ()=>{ if(!done){ reject(new Error('jsonp error')); delete window[cbName]; } };
+    document.body.appendChild(script);
+    setTimeout(()=>{ if(!done){ reject(new Error('timeout')); delete window[cbName]; script.remove(); } }, 10000);
   });
 }
 
-async function downloadAdminCert(idx, btn){
-  const r = window.__adminRecords[idx];
-  if(!r || !r.passed) return;
-  const certData = {
-    name:r.name, rut:r.rut, cargo:r.cargo, sucursal:r.sucursal,
-    total:r.total, pct:r.pct, code:r.code, date:r.date, expiry:r.expiry, signature:r.signature
-  };
-  await exportCertPdf(certData, 'Ev IRL - '+apellidoNombreOrder(r.name)+' - '+r.date.replace(/\//g,'-')+'.pdf', btn);
-}
-
-function toCsvValue(v){
-  const s = (v===null||v===undefined) ? '' : String(v);
-  return '"' + s.replace(/"/g,'""') + '"';
-}
-document.getElementById('btnExportCsv').addEventListener('click', ()=>{
-  const records = window.__adminRecords || [];
-  const headers = ['Nombre','RUN','Cargo','Sucursal','Fecha','Puntaje','Total','Porcentaje','Resultado','Código','Vigente hasta'];
-  const rows = records.map(r=>[
-    r.name, r.rut, r.cargo, r.sucursal, r.date, r.total, r.maxTotal, r.pct+'%',
-    r.passed?'Aprobado':'Reprobado', r.code||'', r.expiry||''
-  ]);
-  const csv = [headers, ...rows].map(row=>row.map(toCsvValue).join(',')).join('\r\n');
-  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'Registro_Evaluaciones_Constructor_Center.csv';
-  link.click();
-});
-document.getElementById('btnRefreshAdmin').addEventListener('click', loadAdminData);
-
-document.getElementById('btnDownloadZip').addEventListener('click', async ()=>{
-  const btn = document.getElementById('btnDownloadZip');
-  const records = (window.__adminRecords || []).filter(r=>r.passed);
-  if(records.length===0){ showToast('Todavía no hay certificados aprobados para descargar.', true); return; }
-  btn.disabled = true;
-  const origText = btn.textContent;
+async function loadAdminChart(){
+  const el = document.getElementById('adminChart');
+  el.innerHTML = '<p class="lede">Cargando resultados...</p>';
   try{
-    const zip = new JSZip();
-    const usedNames = {};
-    for(let i=0;i<records.length;i++){
-      const r = records[i];
-      btn.textContent = 'Generando '+(i+1)+' de '+records.length+'...';
-      const certData = {
-        name:r.name, rut:r.rut, cargo:r.cargo, sucursal:r.sucursal,
-        total:r.total, pct:r.pct, code:r.code, date:r.date, expiry:r.expiry, signature:r.signature
-      };
-      const blob = await buildFixedWidthCertBlob(certData);
-      let baseName = 'Ev IRL - '+apellidoNombreOrder(r.name)+' - '+r.date.replace(/\//g,'-');
-      let finalName = baseName + '.pdf';
-      let n = 2;
-      while(usedNames[finalName]){ finalName = baseName+' ('+n+').pdf'; n++; }
-      usedNames[finalName] = true;
-      zip.file(finalName, blob);
-    }
-    btn.textContent = 'Comprimiendo...';
-    const zipBlob = await zip.generateAsync({type:'blob'});
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(zipBlob);
-    link.download = 'Certificados_Constructor_Center_'+new Date().toISOString().slice(0,10)+'.zip';
-    link.click();
+    const stats = await fetchDriveStatsJsonp();
+    if(stats.error) throw new Error(stats.error);
+    const total = stats.total || 0;
+    const aprob = stats.aprobados || 0;
+    const reprob = stats.reprobados || 0;
+    const pctAprob = total ? Math.round((aprob/total)*100) : 0;
+    const pctReprob = total ? 100 - pctAprob : 0;
+    el.innerHTML =
+      '<div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;">'
+      + '<div class="admin-stat"><div class="n">'+total+'</div><div class="l">Total</div></div>'
+      + '<div class="admin-stat"><div class="n" style="color:var(--ok)">'+aprob+'</div><div class="l">Aprobados</div></div>'
+      + '<div class="admin-stat"><div class="n" style="color:var(--cc-red)">'+reprob+'</div><div class="l">Reprobados</div></div>'
+      + '<div class="admin-stat"><div class="n">'+stats.promedio+'%</div><div class="l">Promedio</div></div>'
+      + '</div>'
+      + '<div style="font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;">Aprobados vs reprobados</div>'
+      + '<div style="height:22px;border-radius:8px;overflow:hidden;display:flex;border:1px solid var(--line);">'
+      + '<div style="width:'+pctAprob+'%;background:var(--ok);"></div>'
+      + '<div style="width:'+pctReprob+'%;background:var(--cc-red);"></div>'
+      + '</div>'
+      + '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ink-soft);margin-top:4px;">'
+      + '<span>'+pctAprob+'% aprobados</span><span>'+pctReprob+'% reprobados</span>'
+      + '</div>';
   }catch(e){
-    console.error('Error generando el ZIP:', e);
-    showToast('No se pudo generar el ZIP. Intenta de nuevo.', true);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = origText;
+    console.error('No se pudo cargar el gráfico de resultados:', e);
+    el.innerHTML = '<p class="lede">No se pudo cargar el gráfico por ahora (puede que la planilla recién se esté creando con el primer resultado, o el script no esté con la última versión). Igual puedes revisar tu Drive directamente. Aprieta "Actualizar gráfico" para reintentar.</p>';
   }
-});
+}
+document.getElementById('btnRefreshAdmin').addEventListener('click', loadAdminChart);
 
 checkVerification();
 checkAdminAccess();
