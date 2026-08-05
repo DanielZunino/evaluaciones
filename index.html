@@ -761,7 +761,6 @@ function updateProgress(){
 }
 
 function renderQuizStep(){
-  window.scrollTo({top:0, behavior:'smooth'});
   updateProgress();
   const el = document.getElementById('view-quiz');
   if(currentStep===0) el.innerHTML = renderSection1();
@@ -872,10 +871,10 @@ function attachStepHandlers(){
   if(currentStep===4) initSignaturePad();
 
   const back = document.getElementById('btnBack');
-  if(back) back.addEventListener('click', ()=>{ currentStep--; renderQuizStep(); });
+  if(back) back.addEventListener('click', ()=>{ currentStep--; renderQuizStep(); window.scrollTo({top:0, behavior:'smooth'}); });
   const next = document.getElementById('btnNext');
   if(next) next.addEventListener('click', ()=>{
-    if(currentStep<4){ currentStep++; renderQuizStep(); }
+    if(currentStep<4){ currentStep++; renderQuizStep(); window.scrollTo({top:0, behavior:'smooth'}); }
     else {
       if(!workerSignatureDataUrl){
         showToast("Por favor firme en el recuadro antes de finalizar.", true);
@@ -1269,6 +1268,9 @@ async function buildCertPdfBlob(node){
   }
   const x = (pageW - mmW)/2;
   const y = (pageH - mmH)/2;
+  // Fondo azul institucional que enmarca el certificado (en vez de dejarlo flotando sobre blanco)
+  pdf.setFillColor(31, 59, 112); // --cc-blue
+  pdf.rect(0, 0, pageW, pageH, 'F');
   pdf.addImage(imgData, 'PNG', x, y, mmW, mmH);
   return pdf.output('blob');
 }
@@ -1580,7 +1582,13 @@ async function checkAdminAccess(){
   await loadAdminChart();
 }
 
-document.getElementById('btnOpenAdmin').addEventListener('click', ()=>{
+document.getElementById('btnOpenAdmin').addEventListener('click', async ()=>{
+  // Si ya se desbloqueó antes en este mismo dispositivo/navegador, entra directo.
+  if(localStorage.getItem('cc_admin_unlocked') === '1'){
+    showView('view-admin');
+    await loadAdminChart();
+    return;
+  }
   document.getElementById('inAdminKey').value = '';
   document.getElementById('adminKeyError').textContent = '';
   document.getElementById('adminKeyModal').classList.remove('hidden');
@@ -1595,6 +1603,7 @@ async function trySubmitAdminKey(){
     document.getElementById('adminKeyError').textContent = 'Clave incorrecta, inténtalo de nuevo.';
     return;
   }
+  localStorage.setItem('cc_admin_unlocked', '1'); // recuerda el acceso en este dispositivo
   document.getElementById('adminKeyModal').classList.add('hidden');
   showView('view-admin');
   await loadAdminChart();
