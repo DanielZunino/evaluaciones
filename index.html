@@ -914,7 +914,8 @@ function initSignaturePad(){
     document.getElementById('sigStatus').textContent = 'Firma capturada';
     document.getElementById('sigStatus').style.color = 'var(--ok)';
   }
-  function end(){ if(!drawing) return; drawing=false; workerSignatureDataUrl = hasDrawn ? canvas.toDataURL('image/png') : null; }
+  function firmaLiviana(cv){ const W=Math.min(480,cv.width), H=Math.round(cv.height*W/cv.width); const c=document.createElement('canvas'); c.width=W; c.height=H; const x=c.getContext('2d'); x.drawImage(cv,0,0,W,H); let s=c.toDataURL('image/png'); if(s.length<40000) return s; x.globalCompositeOperation='destination-over'; x.fillStyle='#fff'; x.fillRect(0,0,W,H); for(const q of [0.85,0.7,0.5,0.35]){ s=c.toDataURL('image/jpeg',q); if(s.length<40000) return s; } return s; } // 23-11-2026: firma liviana
+function end(){ if(!drawing) return; drawing=false; workerSignatureDataUrl = hasDrawn ? firmaLiviana(canvas) : null; }
 
   canvas.addEventListener('mousedown', start);
   canvas.addEventListener('mousemove', move);
